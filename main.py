@@ -6,16 +6,12 @@ import json
 import os
 import requests
 
-from config import BASE_URL, TENANT_ID, CLIENT_ID, BEARER_TOKEN
+from config import BASE_URL, TENANT_ID, CLIENT_ID, get_auth_headers
 from endpoints import ENDPOINTS
 
 OUTPUT_DIR = "output"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-HEADERS = {
-    "Authorization": f"Bearer {BEARER_TOKEN}",
-    "Accept": "application/json",
-}
 
 
 def resolve_path(path: str) -> str:
@@ -24,22 +20,30 @@ def resolve_path(path: str) -> str:
 
 
 def fetch_page1(endpoint: dict) -> dict | None:
-    """GET page 1 from an endpoint. Returns JSON response or None."""
+    """Fetch page 1 from an endpoint. Returns JSON response or None."""
     url = BASE_URL + resolve_path(endpoint["path"])
+    method = endpoint.get("method", "GET").upper()
     params = {"pageNo": 1, "pageSize": 100}
 
     print(f"\n{'─'*50}")
     print(f"  {endpoint['name']}  —  {endpoint['description']}")
-    print(f"  GET {url}")
+    print(f"  {method} {url}")
 
     try:
-        resp = requests.get(url, headers=HEADERS, params=params, timeout=30)
+        if method == "POST":
+            body = endpoint.get("body", {})
+            resp = requests.post(url, headers=get_auth_headers(), json=body, params=params, timeout=30)
+        else:
+            resp = requests.get(url, headers=get_auth_headers(), params=params, timeout=30)
         print(f"  Status: {resp.status_code}")
 
         if resp.status_code == 200:
             data = resp.json()
-            total = data.get("totalResults", "N/A")
-            print(f"  totalResults: {total}")
+            if isinstance(data, dict):
+                total = data.get("totalResults", "N/A")
+                print(f"  totalResults: {total}")
+            else:
+                print(f"  Results: {len(data)} items")
             return data
         else:
             print(f"  Error: {resp.text[:300]}")

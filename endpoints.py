@@ -10,7 +10,7 @@ ENDPOINTS = [
     },
     {
         "name": "resources_minimal",
-        "path": "/api/v2/tenants/{clientId}/resources/minimal",
+        "path": "/api/v2/tenants/{tenantId}/resources/minimal",
         "description": "Minimal resource list",
     },
     {
@@ -22,6 +22,19 @@ ENDPOINTS = [
         "name": "alerts_search",
         "path": "/api/v2/tenants/{tenantId}/alerts/search",
         "description": "Search alerts",
+    },
+    {
+        "name": "logs_queries",
+        "path": "/api/v3/tenants/{tenantId}/logs/queries",
+        "description": "Logs queries",
+        "method": "POST",
+        "body": {
+            "query": "{source = \"kubernetes\", k8s.namespace.name = \"dynamo-workload\"}",
+            "fields": [],
+            "limit": 1000,
+            "start": 1770022800000000000,
+            "end": 1770109200000000000
+        }
     },
     # ── Add more endpoints below ──────────────────────
     # {
