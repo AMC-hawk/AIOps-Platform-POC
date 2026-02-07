@@ -1,5 +1,5 @@
 """
-main.py — OpsRamp API collector. Fetches page 1 from each endpoint,
+main.py - OpsRamp API collector. Fetches page 1 from each endpoint,
 saves each result to its own file under output/.
 """
 
@@ -7,7 +7,7 @@ import json
 import os
 import requests
 
-from config import BASE_URL, TENANT_ID, CLIENT_ID, get_auth_headers
+from config import BASE_URL, TENANT_ID, get_auth_headers
 from endpoints import ENDPOINTS
 
 OUTPUT_DIR = "output"
@@ -17,8 +17,20 @@ os.makedirs(ERRORS_DIR, exist_ok=True)
 
 
 def resolve_path(path: str) -> str:
-    """Replace {tenantId} and {clientId} placeholders."""
-    return path.replace("{tenantId}", TENANT_ID).replace("{clientId}", CLIENT_ID)
+    """Replace all tenant/client placeholder variants.
+
+    NOTE: In OpsRamp API paths, {clientId} means the client *organization* UUID,
+    NOT the OAuth client_id used for authentication. For client-level tenants
+    both {tenantId} and {clientId} resolve to the same org UUID (TENANT_ID).
+    Some automation endpoints use {tenant_id} (with underscore).
+    {partnerId} also maps to TENANT_ID (only relevant for MSP accounts).
+    """
+    return (path
+            .replace("{tenantId}", TENANT_ID)
+            .replace("{clientId}", TENANT_ID)
+            .replace("{tenant_id}", TENANT_ID)
+            .replace("{partnerId}", TENANT_ID)
+            .replace("{mspId}", TENANT_ID))
 
 
 def fetch_page1(endpoint: dict) -> dict | list | None:
@@ -31,7 +43,7 @@ def fetch_page1(endpoint: dict) -> dict | list | None:
     if "params" in endpoint:
         params.update(endpoint["params"])
 
-    print(f"\n{'─'*60}")
+    print(f"\n{'-'*60}")
     print(f"  {endpoint['name']}")
     print(f"  {endpoint['description']}")
     print(f"  {method} {url}")
@@ -71,7 +83,7 @@ def save(name: str, data):
     path = os.path.join(OUTPUT_DIR, f"{name}.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, default=str)
-    print(f"  Saved → {path}")
+    print(f"  Saved -> {path}")
 
 
 def save_error(name: str, status: int, text: str):
@@ -87,14 +99,14 @@ def main():
     skipped_msp = [ep for ep in ENDPOINTS if ep.get("msp_only")]
 
     print("=" * 60)
-    print(f"  OpsRamp API Collector — {total} endpoints")
+    print(f"  OpsRamp API Collector -- {total} endpoints")
     print(f"  Active: {len(active)}  |  MSP-only (skipped): {len(skipped_msp)}")
     print("=" * 60)
 
     if skipped_msp:
-        print(f"\n  ⚠ Skipping MSP-only endpoints:")
+        print(f"\n  [!] Skipping MSP-only endpoints:")
         for ep in skipped_msp:
-            print(f"    · {ep['name']}")
+            print(f"    - {ep['name']}")
 
     success = 0
     failed = 0
@@ -109,7 +121,7 @@ def main():
             failed += 1
 
     print(f"\n{'='*60}")
-    print(f"  Done!  ✅ {success} ok  /  ❌ {failed} failed  /  ⊘ {len(skipped_msp)} msp-only")
+    print(f"  Done!  OK: {success}  /  FAILED: {failed}  /  MSP-ONLY: {len(skipped_msp)}")
     print(f"  Output: {OUTPUT_DIR}/")
     if failed:
         print(f"  Errors: {ERRORS_DIR}/")
