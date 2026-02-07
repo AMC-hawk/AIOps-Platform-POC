@@ -11,6 +11,8 @@ Each endpoint dict:
   description — what it returns
   method      — "GET" (default) or "POST"
   body        — required body for POST endpoints (minimal)
+  params      — extra query-string parameters the API requires
+  msp_only    — True if endpoint requires MSP/SERVICEPROVIDER access (skipped)
 
 To add a new endpoint, just copy-paste a dict and change the values.
 """
@@ -30,11 +32,6 @@ ENDPOINTS = [
         "name": "v2_resources_minimal",
         "path": "/api/v2/tenants/{tenantId}/resources/minimal",
         "description": "Minimal resource list (lightweight)",
-    },
-    {
-        "name": "v2_resources_antivirus",
-        "path": "/api/v2/tenants/{clientId}/resources/antivirus/search",
-        "description": "Latest antivirus definitions on resources",
     },
     {
         "name": "v2_decommissioned_resources",
@@ -77,14 +74,15 @@ ENDPOINTS = [
         "description": "Minimal site details",
     },
     {
-        "name": "v2_device_warranties",
-        "path": "/api/v2/tenants/{clientId}/deviceWarranties",
-        "description": "Get all device warranties",
-    },
-    {
         "name": "v2_device_mgmt_policy_search",
         "path": "/api/v2/tenants/{clientId}/policies/management/search",
         "description": "Search device management policies",
+        "params": {"queryString": ""},
+    },
+    {
+        "name": "v2_device_mgmt_policy_list",
+        "path": "/api/v2/tenants/{clientId}/policies/management",
+        "description": "List device management policies",
     },
     {
         "name": "v2_resource_type_minimal",
@@ -177,11 +175,6 @@ ENDPOINTS = [
         "description": "Search problems",
     },
     {
-        "name": "v2_changes_search",
-        "path": "/api/v2/tenants/{tenantId}/changes/search",
-        "description": "Search change requests",
-    },
-    {
         "name": "v2_tasks_search",
         "path": "/api/v2/tenants/{tenantId}/tasks/search",
         "description": "Search tasks",
@@ -233,8 +226,13 @@ ENDPOINTS = [
 
     {
         "name": "v2_monitoring_templates_search",
-        "path": "/api/v2/tenants/{clientId}/templates/search",
+        "path": "/api/v2/tenants/{tenantId}/monitoring/templates/search",
         "description": "Search monitoring templates",
+    },
+    {
+        "name": "v2_syslog_profiles_export",
+        "path": "/api/v2/tenants/{tenantId}/monitoring/syslogProfiles/export",
+        "description": "Export syslog profiles",
     },
 
     # ╔══════════════════════════════════════════════════════════╗
@@ -251,6 +249,31 @@ ENDPOINTS = [
         "path": "/api/v2/tenants/{tenantId}/integrations/installed/search",
         "description": "Search installed integrations",
     },
+    {
+        "name": "v2_integration_email_properties",
+        "path": "/api/v2/tenants/{tenantId}/integrations/email/properties",
+        "description": "Get configurable email properties",
+    },
+    {
+        "name": "v2_integration_mappable_properties",
+        "path": "/api/v2/tenants/{tenantId}/integrations/mappableProperties",
+        "description": "Get integration mappable properties",
+    },
+    {
+        "name": "v2_integration_event_placeholders",
+        "path": "/api/v2/tenants/{tenantId}/integrations/eventPlaceholders",
+        "description": "Get integration event placeholders",
+    },
+    {
+        "name": "v2_integration_activity",
+        "path": "/api/v2/tenants/{tenantId}/integrations/activity",
+        "description": "Get integration activity log",
+    },
+    {
+        "name": "v2_discovery_profiles_search",
+        "path": "/api/v2/tenants/{tenantId}/discoveryProfiles/search",
+        "description": "Search cloud discovery profiles",
+    },
 
     # ╔══════════════════════════════════════════════════════════╗
     # ║                   V2 — AUTOMATION                       ║
@@ -261,16 +284,6 @@ ENDPOINTS = [
         "path": "/api/v2/tenants/{tenantId}/jobs",
         "description": "Get tenant jobs list",
     },
-    {
-        "name": "v2_job_types",
-        "path": "/api/v2/tenants/{tenantId}/jobTypes",
-        "description": "Get job types",
-    },
-    {
-        "name": "v2_process_workflows_search",
-        "path": "/api/v2/tenants/{tenantId}/workflows/search",
-        "description": "Search process workflows",
-    },
 
     # ╔══════════════════════════════════════════════════════════╗
     # ║                   V2 — KNOWLEDGE BASE                   ║
@@ -278,12 +291,17 @@ ENDPOINTS = [
 
     {
         "name": "v2_kb_categories",
-        "path": "/api/v2/tenants/{tenantId}/kb/categoryList",
+        "path": "/api/v2/tenants/{tenantId}/kb/categories",
         "description": "Get KB category lists",
     },
     {
+        "name": "v2_kb_articles",
+        "path": "/api/v2/tenants/{tenantId}/kb/articles",
+        "description": "Get list of KB articles",
+    },
+    {
         "name": "v2_kb_articles_search",
-        "path": "/api/v2/tenants/{tenantId}/kb/search",
+        "path": "/api/v2/tenants/{tenantId}/kb/articles/search",
         "description": "Search KB articles",
     },
     {
@@ -293,18 +311,20 @@ ENDPOINTS = [
     },
 
     # ╔══════════════════════════════════════════════════════════╗
-    # ║                   V2 — TENANCY ACCESS CONTROLS          ║
+    # ║                   V2 — TENANCY / ACCESS CONTROLS        ║
     # ╚══════════════════════════════════════════════════════════╝
 
     {
         "name": "v2_clients_search",
         "path": "/api/v2/tenants/{tenantId}/clients/search",
-        "description": "Search clients",
+        "description": "Search clients (MSP-only)",
+        "msp_only": True,
     },
     {
         "name": "v2_clients_minimal",
         "path": "/api/v2/tenants/{tenantId}/clients/minimal",
-        "description": "Minimal details of clients",
+        "description": "Minimal details of clients (MSP-only)",
+        "msp_only": True,
     },
     {
         "name": "v2_users_search",
@@ -317,6 +337,11 @@ ENDPOINTS = [
         "description": "Minimal details of users",
     },
     {
+        "name": "v2_user_groups_search",
+        "path": "/api/v2/tenants/{tenantId}/userGroups/search",
+        "description": "Search user groups",
+    },
+    {
         "name": "v2_roles_search",
         "path": "/api/v2/tenants/{tenantId}/roles/search",
         "description": "Search roles",
@@ -327,24 +352,24 @@ ENDPOINTS = [
         "description": "Get permission sets",
     },
     {
-        "name": "v2_countries",
-        "path": "/api/v2/countries",
-        "description": "Get countries list",
+        "name": "v2_credential_sets_minimal",
+        "path": "/api/v2/tenants/{clientId}/credentialSets/minimal",
+        "description": "Minimal details of client credential sets",
     },
     {
-        "name": "v2_timezones",
-        "path": "/api/v2/timezones",
-        "description": "Get timezones list",
+        "name": "v2_device_credential_sets_minimal",
+        "path": "/api/v2/tenants/{clientId}/credentialSets/device/minimal",
+        "description": "Minimal details of device credential sets",
     },
     {
-        "name": "v2_channels",
-        "path": "/api/v2/channels",
-        "description": "Get channels",
+        "name": "v2_client_notes_search",
+        "path": "/api/v2/tenants/{clientId}/clientNotes/search",
+        "description": "Search client notes",
     },
     {
-        "name": "v2_alert_technologies",
-        "path": "/api/v2/alertTechnologies",
-        "description": "Get alert technologies",
+        "name": "v2_tenant_nocs",
+        "path": "/api/v2/tenants/{tenantId}/nocs",
+        "description": "Get tenant NOCs",
     },
 
     # ╔══════════════════════════════════════════════════════════╗
@@ -358,23 +383,8 @@ ENDPOINTS = [
     },
     {
         "name": "v2_patch_config_search",
-        "path": "/api/v2/tenants/{clientId}/patches/configuration/search",
+        "path": "/api/v2/tenants/{clientId}/patchConfigurations/search",
         "description": "Search patch configurations by client",
-    },
-    {
-        "name": "v2_patches_search",
-        "path": "/api/v2/tenants/{tenantId}/patches/search",
-        "description": "Search patches",
-    },
-
-    # ╔══════════════════════════════════════════════════════════╗
-    # ║                   V2 — EXPORTS                          ║
-    # ╚══════════════════════════════════════════════════════════╝
-
-    {
-        "name": "v2_batch_exports",
-        "path": "/api/v2/tenants/{tenantId}/exports/batch/exports",
-        "description": "List batch exports",
     },
 
     # ╔══════════════════════════════════════════════════════════╗
@@ -383,7 +393,7 @@ ENDPOINTS = [
 
     {
         "name": "v2_reporting_apps",
-        "path": "/api/v2/tenants/{tenantId}/reporting/apps",
+        "path": "/api/v2/tenants/{tenantId}/reportingApps/search",
         "description": "Search available reporting apps",
     },
 
@@ -398,14 +408,29 @@ ENDPOINTS = [
     },
 
     # ╔══════════════════════════════════════════════════════════╗
-    # ║                  V3 — RESOURCE MANAGEMENT               ║
+    # ║                   V2 — CLOUD RESOURCES                  ║
     # ╚══════════════════════════════════════════════════════════╝
 
     {
-        "name": "v3_topology_client",
-        "path": "/graph/api/v3/tenants/{tenantId}/topology",
-        "description": "Get client level topology",
+        "name": "v2_cloud_resources_arm",
+        "path": "/api/v2/tenants/{tenantId}/cloudResources/arm",
+        "description": "Get ARM (Azure) cloud resources",
     },
+    {
+        "name": "v2_cloud_resources_aws",
+        "path": "/api/v2/tenants/{tenantId}/cloudResources/aws",
+        "description": "Get AWS cloud resources",
+    },
+    {
+        "name": "v2_cloud_resources_google",
+        "path": "/api/v2/tenants/{tenantId}/cloudResources/google",
+        "description": "Get Google cloud resources",
+    },
+
+    # ╔══════════════════════════════════════════════════════════╗
+    # ║                  V3 — RESOURCE MANAGEMENT               ║
+    # ╚══════════════════════════════════════════════════════════╝
+
     {
         "name": "v3_topology_map_nodes",
         "path": "/graph/api/v3/tenants/{tenantId}/topology/map/nodes",
@@ -431,6 +456,13 @@ ENDPOINTS = [
         "path": "/api/v3/tenants/{tenantId}/resources/policies/search",
         "description": "Search device management policies (v3)",
     },
+    {
+        "name": "v3_service_maps_search",
+        "path": "/api/v3/tenants/{clientId}/service-maps",
+        "description": "List service maps",
+        "method": "POST",
+        "body": {},
+    },
 
     # ╔══════════════════════════════════════════════════════════╗
     # ║                  V3 — METRICSQL                         ║
@@ -439,7 +471,8 @@ ENDPOINTS = [
     {
         "name": "v3_metricsql_metrics",
         "path": "/metricsql/api/v3/tenants/{tenantId}/metrics",
-        "description": "Get metrics (MetricsQL)",
+        "description": "Get metrics (MetricsQL — needs query param)",
+        "params": {"query": "system.cpu.usage"},
     },
     {
         "name": "v3_metricsql_labels",
@@ -475,20 +508,6 @@ ENDPOINTS = [
             "start": 1770022800000000000,
             "end": 1770109200000000000
         }
-    },
-    {
-        "name": "v3_logs_enrichment_lookup_tables_queries",
-        "path": "/api/v3/tenants/{tenantId}/logs/enrichment/lookup-tables/queries",
-        "description": "Query log enrichment lookup tables",
-        "method": "POST",
-        "body": {}
-    },
-    {
-        "name": "v3_logs_enrichment_configs_queries",
-        "path": "/api/v3/tenants/{tenantId}/logs/enrichment/configs/queries",
-        "description": "Query log enrichment configs",
-        "method": "POST",
-        "body": {}
     },
 
     # ╔══════════════════════════════════════════════════════════╗
@@ -527,7 +546,7 @@ ENDPOINTS = [
         "description": "Run OpsQL query",
         "method": "POST",
         "body": {
-            "query": "SELECT * FROM resources LIMIT 10"
+            "query": "type = 'DEVICE'"
         }
     },
 
@@ -538,7 +557,8 @@ ENDPOINTS = [
     {
         "name": "v3_snmp_traps_search",
         "path": "/monitoring/api/v3/tenants/{tenantId}/snmp-traps/search",
-        "description": "Search SNMP trap rules",
+        "description": "Search SNMP trap rules (MSP-only)",
+        "msp_only": True,
     },
 
     # ╔══════════════════════════════════════════════════════════╗
