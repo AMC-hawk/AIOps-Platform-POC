@@ -363,7 +363,7 @@ ENDPOINTS = [
     },
     {
         "name": "v2_patches_search",
-        "path": "/api/v2/tenants/{clientId}/patches/search",
+        "path": "/api/v2/tenants/{tenantId}/patches/search",
         "description": "Search patches",
     },
 
@@ -393,7 +393,7 @@ ENDPOINTS = [
 
     {
         "name": "v2_mgmt_profiles_search",
-        "path": "/api/v2/tenants/{clientId}/managementProfiles/search",
+        "path": "/api/v2/tenants/{tenantId}/managementProfiles/search",
         "description": "Search for management profiles",
     },
 
@@ -403,7 +403,7 @@ ENDPOINTS = [
 
     {
         "name": "v3_topology_client",
-        "path": "/graph/api/v3/tenants/{clientId}/topology",
+        "path": "/graph/api/v3/tenants/{tenantId}/topology",
         "description": "Get client level topology",
     },
     {
@@ -418,12 +418,12 @@ ENDPOINTS = [
     },
     {
         "name": "v3_topology_map_relationships",
-        "path": "/graph/api/v3/tenants/{clientId}/topology/map/relationships",
+        "path": "/graph/api/v3/tenants/{tenantId}/topology/map/relationships",
         "description": "Get topology relationship data",
     },
     {
         "name": "v3_authz_tags",
-        "path": "/api/v3/tenants/{clientId}/authzTags",
+        "path": "/api/v3/tenants/{tenantId}/authzTags",
         "description": "Get authorization tags",
     },
     {
@@ -448,7 +448,7 @@ ENDPOINTS = [
     },
     {
         "name": "v3_metricsql_data",
-        "path": "/metricsql/api/v3/tenants/{clientId}/metrics/data",
+        "path": "/metricsql/api/v3/tenants/{tenantId}/metrics/data",
         "description": "Query metric data (requires POST body)",
         "method": "POST",
         "body": {
